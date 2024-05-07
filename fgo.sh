@@ -42,7 +42,7 @@ SYNOPSIS
   cd directory to file location or directory with fzf
 
 SYNTAX
-  $ fgo [-f | -d] [start_directory_path] [-h | --help]
+  $ fgo [-f | -d] [start_directory] [-h | --help]
 
 FLAG OPTIONS
   -h | --help       Display this help
