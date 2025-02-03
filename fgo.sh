@@ -46,16 +46,16 @@ SYNTAX
 
 FLAG OPTIONS
   -h | --help       Display this help
-  -d                Path by folder (default)
+  -d                Path by directory (default)
   -f                Path by file
 
 EXAMPLES
   $ fgo --help   Show help
-  $ fgo          Path by folder from current directory
-  $ fgo .        Path by folder from current directory
+  $ fgo          Path by directory from current directory
+  $ fgo .        Path by directory from current directory
   $ fgo ~/       Start path from user's home directory
   $ fgo -f ~/    Path by file from home directory
-  $ fgo -d       Path by folder from current directory
+  $ fgo -d       Path by directory from current directory
   $ fgo /etc     Start from /etc directory; implies -d
   $ fgo -f /etc  Start from /etc directory
 EOF
@@ -88,7 +88,7 @@ function _check_params() {
         _show_help
 
     # cgo xx /etc yyy
-    # Check for 3rd parameter;
+    # Check for 3rd parameter; if so, bad parameter;
     elif [[ -n $F3 ]]; then
         echo "Bad parameter."
         _show_help
@@ -140,6 +140,7 @@ function _fgo() {
     # checked for valid directory, shouldn't have a problem;
 
 }
+
 
 #------------------------------------------------------------
 
