@@ -27,9 +27,12 @@ OPTION='--preview-window=right:40%:wrap'
   # It seems that if you quote STYLE, Bash interprets that as a single string rather \
   # than separate flags and options; so it doesn't seem to work; have to remove the quotes;
 
+
+
 ARGS=''
 START_DIR=''
-TFLAG='d'  # default is directory search
+# TFLAG='d'  # default is directory ALL search
+TFLAG='a'  # default is directory ALL search
 F1=''
 F2=''
 F3=''
@@ -46,22 +49,33 @@ SYNOPSIS
   cd directory to file location or directory with fzf
 
 SYNTAX
-  $ fgo [-f | -d] [start_directory] [-h | --help]
+  $ fgo [-a | -f | -d | -l] [start_directory] [-h | --help]
 
 FLAG OPTIONS
   -h | --help       Display this help
-  -d                Path by directory (default)
+  -a                Path by any file/directory (default)
+  -d                Path by directory
   -f                Path by file
+  -l                Path by symlink
 
 EXAMPLES
   $ fgo --help   Show help
-  $ fgo          Path by directory from current directory
-  $ fgo .        Path by directory from current directory
+  $ fgo          Path by any from current directory
+  $ fgo .        Path by any from current directory (default)
   $ fgo ~/       Start path from user's home directory
   $ fgo -f ~/    Path by file from home directory
   $ fgo -d       Path by directory from current directory
-  $ fgo /etc     Start from /etc directory; implies -d
-  $ fgo -f /etc  Start from /etc directory
+  $ fgo -l /     Path by any from root directory
+  $ fgo /etc     Start from /etc directory
+
+ALIASES
+  home
+  ebook, ebooks, eBooks, eBook
+  code, projects, code-projects
+  tv, tv-movies, Movies
+  dlp/movies, movies
+  music
+  classical
 EOF
   OKAY=false
   return
@@ -74,12 +88,43 @@ EOF
 
 #------------------------------------------------------------
 
+function _check_dir_alias() {
+
+    case "$START_DIR" in
+      "home")
+          START_DIR="$HOME"
+          ;;
+      "ebook" | "ebooks" | "eBooks" | "eBook")
+          START_DIR="$HOME/XMEDIA/MMedia/eBooks"
+          ;;
+      "code" | "code-projects" | "projects")
+          START_DIR="$HOME/Subl/Coding/Projects"
+          ;;
+      "tv" | "tv-movies" | "Movies")
+          START_DIR="$HOME/XMEDIA/TV-Movies"
+          ;;
+      "dlp/movies" | "movies")
+          START_DIR="$HOME/Downloads/dlp/movies"
+          ;;
+      "music")
+          START_DIR="$HOME/XMEDIA/Music"
+          ;;
+      "classical")
+          START_DIR="$HOME/XMEDIA/Music/1-Classical"
+          ;;
+    esac
+
+}
 
 function _check_dir() {
+
+    # Check if user used special directory aliases
+    _check_dir_alias
+
+    # Check valid directory
     if [[ ! -d "$START_DIR" ]]; then
         echo "Bad directory."
         OKAY=false
-        # _show_help
     fi
 }
 
@@ -99,17 +144,16 @@ function _check_params() {
 
     # fgo /etc     # this is ok
     # fgo xx /etc  # if not -f or -d, then bad
-    elif [[ "$F1" != "-d" && "$F1" != "-f" ]]; then
+    elif [[ "$F1" != "-d" && "$F1" != "-f" && "$F1" != "-a" && "$F1" != "-l" ]]; then
         if [[ "$F2" != '' ]]; then
             echo "Bad option"
             _show_help
         else
             START_DIR="$F1"
-            # TFLAG='d'  # d is default
             _check_dir
         fi
 
-    # fgo -f
+    # fgo -f or fgo -f ~/
     elif [[ -z "$F2" ]]; then
         TFLAG="$F1"
         START_DIR="."
@@ -124,21 +168,49 @@ function _check_params() {
 
     TFLAG="${TFLAG#-}"  # remove negative
 
-    # echo $START_DIR
-    # OKAY=false
+    if [[ $TFLAG == "a" ]]; then
+        TFLAG=""
+    elif [[ $TFLAG == "l" ]]; then
+        TFLAG="-tl"
+    elif [[ $TFLAG == "f" ]]; then
+        TFLAG="-tf"
+    elif [[ $TFLAG == "d" ]]; then
+        TFLAG="-td"
+    else
+        echo "Bad option"
+        _show_help
+    fi
+
+
 }
 
 function _fgo() {
 
     # if [[ "$OKAY" == true ]]; then return; fi;
     local result
-    result="$($fd . -t $TFLAG $START_DIR | fzf $STYLE $OPTION)"
+    # result="$($fd . -t $TFLAG $START_DIR | fzf $STYLE $OPTION)"
     # Can also denote types multiple times:
     # fd -tf -td -tl  # types file, directory, link
 
-    if [[ "$TFLAG" == 'f' ]]; then
+    result="$($fd . $TFLAG $START_DIR | fzf $STYLE $OPTION)"
+    # Why the '.'? Seems to be a FD quirk; it suggests it when doing some kinds of searches;
+    # fd warning:
+      # [fd error]: The search pattern '/home/h5/XMEDIA/' contains a path-separation character ('/') and will not lead to any search results.
+      # If you want to search for all files inside the '/home/h5/XMEDIA/' directory, use a match-all pattern:
+      # fd . '/home/h5/XMEDIA/'
+
+    # After getting back the result, check if that result is a file or directory;
+    # If file, then strip out the filename; get only the directory to cd into it;
+    # -f : check if file; -d : check if directory
+    if [[ -f "$result" ]]; then
         result=$(dirname "$result")
     fi
+
+    # # After we get back the result, strip out the file name in order to cd into the dir;
+    # if [[ "$TFLAG" == '-tf' ]]; then
+    #     result=$(dirname "$result")
+    # fi
+
 
     # In order for cd to work, the script has to be sourced;
     cd "$result" || return
@@ -158,6 +230,7 @@ ARGS="$*"
 F1=$(echo "$ARGS" | awk '{print $1}')
 F2=$(echo "$ARGS" | awk '{print $2}')
 F3=$(echo "$ARGS" | awk '{print $3}')
+  # Can be 1 or 2 params, but not 3; Error if 3rd param;
 
 # echo "OUTPUT: f1=$F1 . f2=$F2 . f3=$F3"
 
