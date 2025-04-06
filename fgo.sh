@@ -2,6 +2,10 @@
 # // 2024-05-02 Thu 08:46
 # // 2024-05-04 Sat 01:04
 
+
+# Name: fgo.sh
+# Location: .../shell-scripts/fgo_search/fgo.sh
+
 #------------------------------------------------------------
 
 
@@ -87,31 +91,31 @@ function _check_params() {
     elif [[ "$F1" == "-h" || "$F1" == "--help" ]]; then
         _show_help
 
-    # cgo xx /etc yyy
-    # Check for 3rd parameter; if so, bad parameter;
+    # fgo -d /etc yyy
+    # Check for 3rd parameter; if so, bad parameter; There should be max 2 parameters;
     elif [[ -n $F3 ]]; then
         echo "Bad parameter."
         _show_help
 
-    # cgo /etc     # this is ok
-    # cgo xx /etc  # if not -f or -d, then bad
+    # fgo /etc     # this is ok
+    # fgo xx /etc  # if not -f or -d, then bad
     elif [[ "$F1" != "-d" && "$F1" != "-f" ]]; then
         if [[ "$F2" != '' ]]; then
             echo "Bad option"
             _show_help
         else
-          START_DIR="$F1"
-          # TFLAG='d'  # d is default
-          _check_dir
+            START_DIR="$F1"
+            # TFLAG='d'  # d is default
+            _check_dir
         fi
 
-    # cgo -f
+    # fgo -f
     elif [[ -z "$F2" ]]; then
         TFLAG="$F1"
         START_DIR="."
 
-    # cgo -f /etc
-    # cgo -d /etc
+    # fgo -f /etc
+    # fgo -d /etc
     else
         TFLAG="$F1"
         START_DIR="$F2"
@@ -129,6 +133,8 @@ function _fgo() {
     # if [[ "$OKAY" == true ]]; then return; fi;
     local result
     result="$($fd . -t $TFLAG $START_DIR | fzf $STYLE $OPTION)"
+    # Can also denote types multiple times:
+    # fd -tf -td -tl  # types file, directory, link
 
     if [[ "$TFLAG" == 'f' ]]; then
         result=$(dirname "$result")
@@ -153,6 +159,8 @@ F1=$(echo "$ARGS" | awk '{print $1}')
 F2=$(echo "$ARGS" | awk '{print $2}')
 F3=$(echo "$ARGS" | awk '{print $3}')
 
+# echo "OUTPUT: f1=$F1 . f2=$F2 . f3=$F3"
+
 
 # Check parameters and flags
 _check_params
@@ -161,4 +169,4 @@ _check_params
 if $OKAY; then _fgo; fi;
 
 # Since the script must be sourced, can't just "exit" on error;
-# So resorting to this check;
+# So resorting to this check; xxx
