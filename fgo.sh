@@ -71,24 +71,15 @@ EXAMPLES
   $ fgo ~/          Start path from user's home directory
   $ fgo -f ~/       Path by file from home directory
   $ fgo -d          Path by directory from current directory
-  $ fgo -l /        Path by any from root directory
-  $ fgo -SP code    Open Sublime Project from alias code directory
-  $ fgo /etc        Start from /etc directory
+  $ fgo -SP code    Open Sublime Project from alias 'code' directory
   $ fgo projects    Start from alias 'projects' directory
-  $ fgo home        Start from alias 'home' directory
-  $ fgo ebooks      Start from alias 'ebooks' directory
 
 ALIASES
-  home
-  ebook, ebooks, eBooks, eBook
-  code, project, projects
-  shell, shellscripts
-  web, webdev
-  codedocs
-  tv, tv-movies, Movies
-  dlp/movies, movies
-  music
-  classical
+  ▪ home                     ▪ web, webdev   ▪ tv, movies
+  ▪ ebook, ebooks            ▪ codedocs      ▪ dlp/movies
+  ▪ code, project, projects  ▪ music
+  ▪ shell, shellscripts      ▪ classical
+
 EOF
   OKAY=false
   return
@@ -107,7 +98,7 @@ function _check_dir_alias() {
       "home")
           START_DIR="$HOME"
           ;;
-      "ebook" | "ebooks" | "eBooks" | "eBook")
+      "ebook" | "ebooks")
           START_DIR="$HOME/XMEDIA/MMedia/eBooks"
           ;;
       "code" | "projects" | "project")
@@ -122,10 +113,10 @@ function _check_dir_alias() {
       "codedocs")
           START_DIR="$HOME/DATA/zData/Coding/CodeDocs"
           ;;
-      "tv" | "tv-movies" | "Movies")
+      "tv" | "movies")
           START_DIR="$HOME/XMEDIA/TV-Movies"
           ;;
-      "dlp/movies" | "movies")
+      "dlp/movies")
           START_DIR="$HOME/Downloads/dlp/movies"
           ;;
       "music")
@@ -171,7 +162,7 @@ function _check_params() {
     # fgo -d /etc yyy
     # Check for 3rd parameter; if so, bad parameter; There should be max 2 parameters;
     elif [[ -n $F3 ]]; then
-        echo "Too many parameter."
+        echo "Too many parameters."
         _show_help
 
     # fgo /etc     # this is ok
@@ -182,12 +173,12 @@ function _check_params() {
 
         # if none of the above flags and there's a 2nd param:
         if [[ "$F2" != '' ]]; then
-            echo "Bad option."
+            echo "Bad option #1."
             _show_help
 
         # if it contains - with some other misc letters
         elif [[ "$F1" == "-"* ]]; then
-            echo "Bad option."
+            echo "Bad option #2."
             _show_help
 
         # This then must be the user's directory:
@@ -231,7 +222,7 @@ function _check_params() {
     else
         # Don't think we should come here because we already checked
          # for these flags earlier;
-        echo "Bad option"
+        echo "Bad option #3."
         _show_help
     fi
 
