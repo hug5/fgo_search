@@ -1,7 +1,7 @@
 #! /usr/bin/bash
 # // 2024-05-02 Thu 08:46
 # // 2024-05-04 Sat 01:04
-
+# // 2026-04-16 Thu 22:30
 
 # Name: fgo.sh
 # Location: .../shell-scripts/fgo_search/fgo.sh
@@ -19,7 +19,9 @@ fi
 #------------------------------------------------------------
 
 
-fd='fdfind --hidden --exclude .git'
+# fd='fdfind --hidden --exclude .git'
+fd='fdfind --hidden --no-ignore --exclude .git'
+  # --no-ignore : do not obey git ignore files
 
 STYLE="--border --margin=1 --prompt=: --header=————————————————————————————————"
 OPTION='--preview-window=right:40%:wrap'
@@ -59,19 +61,25 @@ FLAG OPTIONS
   -l                Path by symlink
 
 EXAMPLES
-  $ fgo --help   Show help
-  $ fgo          Path by any from current directory
-  $ fgo .        Path by any from current directory (default)
-  $ fgo ~/       Start path from user's home directory
-  $ fgo -f ~/    Path by file from home directory
-  $ fgo -d       Path by directory from current directory
-  $ fgo -l /     Path by any from root directory
-  $ fgo /etc     Start from /etc directory
+  $ fgo --help      Show help
+  $ fgo             Path by any from current directory
+  $ fgo .           Path by any from current directory (default)
+  $ fgo ~/          Start path from user's home directory
+  $ fgo -f ~/       Path by file from home directory
+  $ fgo -d          Path by directory from current directory
+  $ fgo -l /        Path by any from root directory
+  $ fgo /etc        Start from /etc directory
+  $ fgo projects    Start from alias 'projects' directory
+  $ fgo home        Start from alias 'home' directory
+  $ fgo ebooks      Start from alias 'ebooks' directory
 
 ALIASES
   home
   ebook, ebooks, eBooks, eBook
-  code, projects, code-projects
+  code, project, projects
+  shell, shellscripts
+  web, webdev
+  codedocs
   tv, tv-movies, Movies
   dlp/movies, movies
   music
@@ -97,8 +105,17 @@ function _check_dir_alias() {
       "ebook" | "ebooks" | "eBooks" | "eBook")
           START_DIR="$HOME/XMEDIA/MMedia/eBooks"
           ;;
-      "code" | "code-projects" | "projects")
-          START_DIR="$HOME/Subl/Coding/Projects"
+      "code" | "projects" | "project")
+          START_DIR="$HOME/DATA/zData/Coding/Projects"
+          ;;
+      "shellscripts"| "shell")
+          START_DIR="$HOME/DATA/zData/Coding/Projects/shell-scripts"
+          ;;
+      "webdev"| "web")
+          START_DIR="$HOME/DATA/zData/Coding/Projects/webdev"
+          ;;
+      "codedocs")
+          START_DIR="$HOME/DATA/zData/Coding/CodeDocs"
           ;;
       "tv" | "tv-movies" | "Movies")
           START_DIR="$HOME/XMEDIA/TV-Movies"
