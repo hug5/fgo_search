@@ -143,11 +143,13 @@ function _check_dir() {
     # Check if user used special directory aliases
     _check_dir_alias
 
+    # echo "$START_DIR"
+
     # Check valid directory
     if [[ ! -d "$START_DIR" ]]; then
         # echo $TFLAG
         # echo  "$START_DIR"
-        echo "Bad option or directory."
+        echo "Bad directory."
         OKAY=false
         # Could end up here if user puts in bad option, like
          # combining multiple flags;
@@ -159,22 +161,36 @@ function _check_params() {
     if [[ -z "$F1" ]]; then
         START_DIR="."
         # TFLAG='d'  # d is default
-    elif [[ "$F1" == "-h" || "$F1" == "--help" ]]; then
+    elif [[ "$F1" == "-h" || "$F1" == "--help" ||
+            "$F2" == "-h" || "$F2" == "--help" ]]; then
+        # Checking both f1 and f2 because the alias I set up may have
+         # -a, -l, -f as the first parameter by default;
+
         _show_help
 
     # fgo -d /etc yyy
     # Check for 3rd parameter; if so, bad parameter; There should be max 2 parameters;
     elif [[ -n $F3 ]]; then
-        echo "Bad parameter."
+        echo "Too many parameter."
         _show_help
 
     # fgo /etc     # this is ok
     # fgo xx /etc  # if not -f or -d, then bad
     # elif [[ "$F1" != "-d" && "$F1" != "-f" && "$F1" != "-a" && "$F1" != "-l" ]]; then
-    elif [[ "$F1" != "-SP" && "$F1" != "-d" && "$F1" != "-f" && "$F1" != "-a" && "$F1" != "-l" ]]; then
+    elif [[ "$F1" != "-SP" && "$F1" != "-d" && "$F1" != "-f" &&
+            "$F1" != "-a" && "$F1" != "-l" ]]; then
+
+        # if none of the above flags and there's a 2nd param:
         if [[ "$F2" != '' ]]; then
-            echo "Bad option"
+            echo "Bad option."
             _show_help
+
+        # if it contains - with some other misc letters
+        elif [[ "$F1" == "-"* ]]; then
+            echo "Bad option."
+            _show_help
+
+        # This then must be the user's directory:
         else
             START_DIR="$F1"
             _check_dir
@@ -193,6 +209,12 @@ function _check_params() {
         _check_dir
     fi
 
+
+    if ! "$OKAY"; then
+        return
+    fi
+
+
     TFLAG="${TFLAG#-}"  # remove negative
 
     if [[ $TFLAG == "a" ]]; then
@@ -207,6 +229,8 @@ function _check_params() {
     elif [[ $TFLAG == "d" ]]; then
         TFLAG="-td"
     else
+        # Don't think we should come here because we already checked
+         # for these flags earlier;
         echo "Bad option"
         _show_help
     fi
