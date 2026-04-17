@@ -19,6 +19,7 @@ fi
 #------------------------------------------------------------
 
 
+
 # fd='fdfind --hidden --exclude .git'
 fd='fdfind --hidden --no-ignore --exclude .git'
   # --no-ignore : do not obey git ignore files
@@ -39,19 +40,21 @@ F1=''
 F2=''
 F3=''
 OKAY=true
+SUBL_PROJ=false  # Is this a sublime project open?
 
 
 #------------------------------------------------------------
 
 function _show_help() {
 cat << EOF
-fgo : find & go cd
+fgo : find & go cd / open Sublime Project
 
 SYNOPSIS
-  cd directory to file location or directory with fzf
+  • cd directory to file location or directory w/ fzf
+  • Open Sublime Project
 
 SYNTAX
-  $ fgo [-a | -f | -d | -l] [start_directory] [-h | --help]
+  $ fgo [-a | -f | -d | -l | -SP] [start_directory] [-h | --help]
 
 FLAG OPTIONS
   -h | --help       Display this help
@@ -59,6 +62,7 @@ FLAG OPTIONS
   -d                Path by directory
   -f                Path by file
   -l                Path by symlink
+  -SP               Open Sublime-Project file
 
 EXAMPLES
   $ fgo --help      Show help
@@ -68,6 +72,7 @@ EXAMPLES
   $ fgo -f ~/       Path by file from home directory
   $ fgo -d          Path by directory from current directory
   $ fgo -l /        Path by any from root directory
+  $ fgo -SP code    Open Sublime Project from alias code directory
   $ fgo /etc        Start from /etc directory
   $ fgo projects    Start from alias 'projects' directory
   $ fgo home        Start from alias 'home' directory
@@ -140,8 +145,12 @@ function _check_dir() {
 
     # Check valid directory
     if [[ ! -d "$START_DIR" ]]; then
-        echo "Bad directory."
+        # echo $TFLAG
+        # echo  "$START_DIR"
+        echo "Bad option or directory."
         OKAY=false
+        # Could end up here if user puts in bad option, like
+         # combining multiple flags;
     fi
 }
 
@@ -161,7 +170,8 @@ function _check_params() {
 
     # fgo /etc     # this is ok
     # fgo xx /etc  # if not -f or -d, then bad
-    elif [[ "$F1" != "-d" && "$F1" != "-f" && "$F1" != "-a" && "$F1" != "-l" ]]; then
+    # elif [[ "$F1" != "-d" && "$F1" != "-f" && "$F1" != "-a" && "$F1" != "-l" ]]; then
+    elif [[ "$F1" != "-SP" && "$F1" != "-d" && "$F1" != "-f" && "$F1" != "-a" && "$F1" != "-l" ]]; then
         if [[ "$F2" != '' ]]; then
             echo "Bad option"
             _show_help
@@ -187,6 +197,9 @@ function _check_params() {
 
     if [[ $TFLAG == "a" ]]; then
         TFLAG=""
+    elif [[ $TFLAG == "SP" ]]; then
+        TFLAG=""
+        SUBL_PROJ=true
     elif [[ $TFLAG == "l" ]]; then
         TFLAG="-tl"
     elif [[ $TFLAG == "f" ]]; then
@@ -209,12 +222,21 @@ function _fgo() {
     # Can also denote types multiple times:
     # fd -tf -td -tl  # types file, directory, link
 
-    result="$($fd . $TFLAG $START_DIR | fzf $STYLE $OPTION)"
+    # fd='fdfind --hidden --no-ignore --exclude .git'
+
+    # Let's change into the directory so that we minimize the long path;
+    cd "$START_DIR" || return
+
+    # result="$($fd . $TFLAG $START_DIR | fzf $STYLE $OPTION)"
+    result="$($fd . $TFLAG | fzf $STYLE $OPTION)"
     # Why the '.'? Seems to be a FD quirk; it suggests it when doing some kinds of searches;
+    # Seems . is used when searching a path with '/' in the path;
+
     # fd warning:
       # [fd error]: The search pattern '/home/h5/XMEDIA/' contains a path-separation character ('/') and will not lead to any search results.
       # If you want to search for all files inside the '/home/h5/XMEDIA/' directory, use a match-all pattern:
       # fd . '/home/h5/XMEDIA/'
+
 
     # After getting back the result, check if that result is a file or directory;
     # If file, then strip out the filename; get only the directory to cd into it;
@@ -223,17 +245,40 @@ function _fgo() {
         result=$(dirname "$result")
     fi
 
-    # # After we get back the result, strip out the file name in order to cd into the dir;
-    # if [[ "$TFLAG" == '-tf' ]]; then
-    #     result=$(dirname "$result")
-    # fi
 
+    if [[ -n $result ]]; then
+        # In order for cd to work, the script has to be sourced;
+        cd "$result" || return
+        # doing || return is an extra safety; but since we
+         # checked for valid directory, shouldn't have a problem;
+    fi
+}
 
-    # In order for cd to work, the script has to be sourced;
-    cd "$result" || return
-    # doing || return is an extra safety; but since we
-    # checked for valid directory, shouldn't have a problem;
+function _fgo_subl() {
 
+    local result
+
+    # filter find by sublime-project extension
+    fd="${fd} -e sublime-project"
+
+    # Let's change into the directory so that we minimize the long path;
+    cd "$START_DIR" || return
+
+    result="$($fd . $TFLAG | fzf $STYLE $OPTION)"
+    # Seems . is used when searching a path with '/' in the path;
+
+    # not sure why just checking for $result doesn't work
+     # if user happens to exit the search;
+    # if $result; then  # this always seems to be true
+    if [[ -n $result ]]; then
+        # Open the sublime project
+        # echo $result
+        # echo "kkkkkkkkkkkkkkkkkkkk"
+        subl --project "$result"
+    fi
+
+    # Return back to starting directory;
+    cd - || return
 }
 
 
@@ -256,7 +301,15 @@ F3=$(echo "$ARGS" | awk '{print $3}')
 _check_params
 
 # If OKAY, then run;
-if $OKAY; then _fgo; fi;
+# if $OKAY; then _fgo; fi;
+
+# Check if this is a standard search/go; or open sublime project;
+if $OKAY && $SUBL_PROJ; then
+    _fgo_subl;
+elif $OKAY; then
+    _fgo;
+fi;
+
 
 # Since the script must be sourced, can't just "exit" on error;
 # So resorting to this check; xxx
