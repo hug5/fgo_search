@@ -3,10 +3,10 @@
 
 ### Description:
 - Find and cd to directory 
-- Find and oipensublime project
+- Find and open Sublime-Text project
 
 
-#### Requiresment:
+#### Requirement:
 - fd find
 - fzf
 
