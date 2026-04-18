@@ -50,8 +50,8 @@ cat << EOF
 fgo : find & go cd / open Sublime Project
 
 SYNOPSIS
-  • cd directory to file location or directory w/ fzf
-  • Open Sublime Project
+  ▫ cd directory to file location or directory w/ fzf
+  ▫ Open Sublime Project
 
 SYNTAX
   $ fgo [-a | -f | -d | -l | -SP] [start_directory] [-h | --help]
@@ -75,10 +75,10 @@ EXAMPLES
   $ fgo projects    Start from alias 'projects' directory
 
 ALIASES
-  ⬚  home                     ⬚  web, webdev   ⬚  tv, movies
+  ⬚  home                     ⬚  web, webdev
   ⬚  ebook, ebooks            ⬚  codedocs      ⬚  dlp/movies
-  ⬚  code, project, projects  ⬚  music
-  ⬚  shell, shellscripts      ⬚  classical
+  ⬚  proj, project, projects  ⬚  coding        ⬚  music
+  ⬚  shell, shellscripts      ⬚  tv, movies    ⬚  classical
 EOF
     # ⃢ ⬚
     OKAY=false
@@ -101,18 +101,6 @@ function _check_dir_alias() {
       "ebook" | "ebooks")
           START_DIR="$HOME/XMEDIA/MMedia/eBooks"
           ;;
-      "code" | "projects" | "project")
-          START_DIR="$HOME/DATA/zData/Coding/Projects"
-          ;;
-      "shellscripts"| "shell")
-          START_DIR="$HOME/DATA/zData/Coding/Projects/shell-scripts"
-          ;;
-      "webdev"| "web")
-          START_DIR="$HOME/DATA/zData/Coding/Projects/webdev"
-          ;;
-      "codedocs")
-          START_DIR="$HOME/DATA/zData/Coding/CodeDocs"
-          ;;
       "tv" | "movies")
           START_DIR="$HOME/XMEDIA/TV-Movies"
           ;;
@@ -124,6 +112,21 @@ function _check_dir_alias() {
           ;;
       "classical")
           START_DIR="$HOME/XMEDIA/Music/1-Classical"
+          ;;
+      "coding")
+          START_DIR="$HOME/DATA/zData/Coding"
+          ;;
+      "proj" | "project" | "projects")
+          START_DIR="$HOME/DATA/zData/Coding/Projects"
+          ;;
+      "shellscripts" | "shell")
+          START_DIR="$HOME/DATA/zData/Coding/Projects/shell-scripts"
+          ;;
+      "webdev" | "web")
+          START_DIR="$HOME/DATA/zData/Coding/Projects/webdev"
+          ;;
+      "codedocs")
+          START_DIR="$HOME/DATA/zData/Coding/CodeDocs"
           ;;
     esac
 
