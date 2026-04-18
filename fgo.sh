@@ -75,14 +75,14 @@ EXAMPLES
   $ fgo projects    Start from alias 'projects' directory
 
 ALIASES
-  ▪ home                     ▪ web, webdev   ▪ tv, movies
-  ▪ ebook, ebooks            ▪ codedocs      ▪ dlp/movies
-  ▪ code, project, projects  ▪ music
-  ▪ shell, shellscripts      ▪ classical
-
+  ⬚  home                     ⬚  web, webdev   ⬚  tv, movies
+  ⬚  ebook, ebooks            ⬚  codedocs      ⬚  dlp/movies
+  ⬚  code, project, projects  ⬚  music
+  ⬚  shell, shellscripts      ⬚  classical
 EOF
-  OKAY=false
-  return
+    # ⃢ ⬚
+    OKAY=false
+    return
 }
 
 # Aliases to use:
@@ -266,6 +266,9 @@ function _fgo() {
         cd "$result" || return
         # doing || return is an extra safety; but since we
          # checked for valid directory, shouldn't have a problem;
+    else
+        cd - > /dev/null || return
+        # /dev/null so it doesn't print the directory change in stdout;
     fi
 }
 
@@ -293,7 +296,7 @@ function _fgo_subl() {
     fi
 
     # Return back to starting directory;
-    cd - || return
+    cd - > /dev/null || return
 }
 
 
